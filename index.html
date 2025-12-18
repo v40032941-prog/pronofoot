@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PronoFoot - Pronostics Football</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        header {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #e94560;
+        }
+        
+        header h1 {
+            color: #e94560;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: #ccc;
+            font-size: 1.1rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .api-key-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .api-key-section h3 {
+            color: #e94560;
+            margin-bottom: 15px;
+        }
+        
+        .api-key-section input {
+            width: 70%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+        
+        .api-key-section button, .btn {
+            padding: 12px 25px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .api-key-section button:hover, .btn:hover {
+            background: #ff6b6b;
+        }
+        
+        .info-box {
+            background: rgba(233, 69, 96, 0.2);
+            border-left: 4px solid #e94560;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .info-box a {
+            color: #ff6b6b;
+        }
+        
+        .leagues-section {
+            margin-bottom: 30px;
+        }
+        
+        .leagues-section h2 {
+            color: #e94560;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .league-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .league-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .league-btn:hover, .league-btn.active {
+            background: #e94560;
+            border-color: #e94560;
+        }
+        
+        .matches-container {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .match-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            transition: transform 0.3s;
+        }
+        
+        .match-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .league-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .league-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+        }
+        
+        .match-date {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .teams-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .team {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .team-logo {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+        
+        .team-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .vs {
+            font-size: 1.5rem;
+            color: #e94560;
+            padding: 0 20px;
+        }
+        
+        .predictions-section h4 {
+            color: #e94560;
+            margin-bottom: 15px;
+        }
+        
+        .prediction-bars {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .prediction-bar {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .bar-label {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .bar-container {
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s;
+        }
+        
+        .bar-fill.home { background: #4CAF50; }
+        .bar-fill.draw { background: #FFC107; }
+        .bar-fill.away { background: #f44336; }
+        
+        .bar-value {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        
+        .prediction-advice {
+            background: rgba(233, 69, 96, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .prediction-advice strong {
+            color: #ff6b6b;
+            font-size: 1.2rem;
+        }
+        
+        .odds-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .odds-section h4 {
+            color: #e94560;
+            margin-bottom: 10px;
+        }
+        
+        .odds-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .odd-item {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .odd-label {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .odd-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #e94560;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: rgba(244, 67, 54, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            color: #888;
+        }
+        
+        @media (max-width: 768px) {
+            .api-key-section input {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .teams-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .prediction-bars {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PronoFoot</h1>
+        <p>Pronostics de matchs de football bases sur les statistiques et l'IA</p>
+    </header>
+    
+    <div class="container">
+        <div class="api-key-section">
+            <h3>Configuration API</h3>
+            <input type="text" id="apiKey" placeholder="Entrez votre cle API-Football">
+            <button onclick="saveApiKey()">Sauvegarder</button>
+            <div class="info-box">
+                <strong>Comment obtenir une cle API gratuite :</strong><br>
+                1. Inscrivez-vous sur <a href="https://www.api-football.com/" target="_blank">API-Football</a><br>
+                2. Creez un compte gratuit (100 requetes/jour)<br>
+                3. Copiez votre cle API depuis le tableau de bord<br>
+                4. Collez-la ci-dessus et cliquez "Sauvegarder"
+            </div>
+        </div>
+        
+        <div class="leagues-section">
+            <h2>Ligues Populaires</h2>
+            <div class="league-buttons">
+                <button class="league-btn" onclick="loadPredictions(39)">Premier League</button>
+                <button class="league-btn" onclick="loadPredictions(140)">La Liga</button>
+                <button class="league-btn" onclick="loadPredictions(135)">Serie A</button>
+                <button class="league-btn" onclick="loadPredictions(78)">Bundesliga</button>
+                <button class="league-btn" onclick="loadPredictions(61)">Ligue 1</button>
+                <button class="league-btn" onclick="loadPredictions(2)">Champions League</button>
+                <button class="league-btn" onclick="loadPredictions(3)">Europa League</button>
+                <button class="league-btn" onclick="loadPredictions(94)">Primeira Liga</button>
+            </div>
+        </div>
+        
+        <div id="matchesContainer" class="matches-container">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Selectionnez une ligue pour voir les pronostics</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>PronoFoot - Les pronostics sont bases sur des analyses statistiques.</p>
+        <p>Jouez de maniere responsable. Les paris comportent des risques.</p>
+    </footer>
+    
+    <script>
+        let API_KEY = localStorage.getItem('apiFootballKey') || '';
+        const API_HOST = 'v3.football.api-sports.io';
+        
+        if (API_KEY) {
+            document.getElementById('apiKey').value = API_KEY;
+        }
+        
+        function saveApiKey() {
+            API_KEY = document.getElementById('apiKey').value.trim();
+            if (API_KEY) {
+                localStorage.setItem('apiFootballKey', API_KEY);
+                alert('Cle API sauvegardee avec succes!');
+            } else {
+                alert('Veuillez entrer une cle API valide');
+            }
+        }
+        
+        async function loadPredictions(leagueId) {
+            if (!API_KEY) {
+                document.getElementById('matchesContainer').innerHTML = `
+                    <div class="error">
+                        <h3>Cle API requise</h3>
+                        <p>Veuillez entrer votre cle API-Football pour voir les pronostics.</p>
+                    </div>`;
+                return;
+            }
+            
+            document.querySelectorAll('.league-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('matchesContainer').innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Chargement des pronostics...</p>
+                </div>`;
+            
+            try {
+                // Get upcoming fixtures
+                const fixturesResponse = await fetch(
+                    `https://${API_HOST}/fixtures?league=${leagueId}&season=2024&next=10`,
+                    {
+                        headers: {
+                            'x-apisports-key': API_KEY
+                        }
+                    }
+                );
+                
+                const fixturesData = await fixturesResponse.json();
+                
+                if (fixturesData.errors && Object.keys(fixturesData.errors).length > 0) {
+                    throw new Error(Object.values(fixturesData.errors).join(', '));
+                }
+                
+                const fixtures = fixturesData.response || [];
+                
+                if (fixtures.length === 0) {
+                    document.getElementById('matchesContainer').innerHTML = `
+                        <div class="error">
+                            <h3>Aucun match trouve</h3>
+                            <p>Pas de matchs a venir pour cette ligue.</p>
+                        </div>`;
+                    return;
+                }
+                
+                // Get predictions for each fixture
+                let html = '';
+                for (const fixture of fixtures.slice(0, 5)) {
+                    const predResponse = await fetch(
+                        `https://${API_HOST}/predictions?fixture=${fixture.fixture.id}`,
+                        {
+                            headers: {
+                                'x-apisports-key': API_KEY
+                            }
+                        }
+                    );
+                    
+                    const predData = await predResponse.json();
+                    const prediction = predData.response?.[0];
+                    
+                    html += renderMatchCard(fixture, prediction);
+                }
+                
+                document.getElementById('matchesContainer').innerHTML = html || `
+                    <div class="error">
+                        <p>Aucune prediction disponible.</p>
+                    </div>`;
+                    
+            } catch (error) {
+                document.getElementById('matchesContainer').innerHTML = `
+                    <div class="error">
+                        <h3>Erreur</h3>
+                        <p>${error.message}</p>
+                        <p>Verifiez votre cle API ou reessayez plus tard.</p>
+                    </div>`;
+            }
+        }
+        
+        function renderMatchCard(fixture, prediction) {
+            const date = new Date(fixture.fixture.date);
+            const dateStr = date.toLocaleDateString('fr-FR', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const pred = prediction?.predictions || {};
+            const teams = prediction?.teams || {};
+            const comparison = prediction?.comparison || {};
+            
+            const homePercent = pred.percent?.home || '33%';
+            const drawPercent = pred.percent?.draw || '33%';
+            const awayPercent = pred.percent?.away || '33%';
+            
+            return `
+                <div class="match-card">
+                    <div class="match-header">
+                        <div class="league-info">
+                            <img src="${fixture.league.logo}" alt="${fixture.league.name}" class="league-logo">
+                            <span>${fixture.league.name}</span>
+                        </div>
+                        <div class="match-date">${dateStr}</div>
+                    </div>
+                    
+                    <div class="teams-section">
+                        <div class="team">
+                            <img src="${fixture.teams.home.logo}" alt="${fixture.teams.home.name}" class="team-logo">
+                            <div class="team-name">${fixture.teams.home.name}</div>
+                        </div>
+                        <div class="vs">VS</div>
+                        <div class="team">
+                            <img src="${fixture.teams.away.logo}" alt="${fixture.teams.away.name}" class="team-logo">
+                            <div class="team-name">${fixture.teams.away.name}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="predictions-section">
+                        <h4>Probabilites du match</h4>
+                        <div class="prediction-bars">
+                            <div class="prediction-bar">
+                                <div class="bar-label">Victoire ${fixture.teams.home.name}</div>
+                                <div class="bar-container">
+                                    <div class="bar-fill home" style="width: ${homePercent}"></div>
+                                </div>
+                                <div class="bar-value">${homePercent}</div>
+                            </div>
+                            <div class="prediction-bar">
+                                <div class="bar-label">Match Nul</div>
+                                <div class="bar-container">
+                                    <div class="bar-fill draw" style="width: ${drawPercent}"></div>
+                                </div>
+                                <div class="bar-value">${drawPercent}</div>
+                            </div>
+                            <div class="prediction-bar">
+                                <div class="bar-label">Victoire ${fixture.teams.away.name}</div>
+                                <div class="bar-container">
+                                    <div class="bar-fill away" style="width: ${awayPercent}"></div>
+                                </div>
+                                <div class="bar-value">${awayPercent}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="prediction-advice">
+                            <strong>Conseil: ${pred.advice || 'Analyse en cours...'}</strong>
+                        </div>
+                        
+                        ${comparison ? `
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Forme</div>
+                                <div class="stat-value">${comparison.form?.home || '-'} vs ${comparison.form?.away || '-'}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Attaque</div>
+                                <div class="stat-value">${comparison.att?.home || '-'} vs ${comparison.att?.away || '-'}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Defense</div>
+                                <div class="stat-value">${comparison.def?.home || '-'} vs ${comparison.def?.away || '-'}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">H2H</div>
+                                <div class="stat-value">${comparison.h2h?.home || '-'} vs ${comparison.h2h?.away || '-'}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Buts</div>
+                                <div class="stat-value">${comparison.goals?.home || '-'} vs ${comparison.goals?.away || '-'}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Total</div>
+                                <div class="stat-value">${comparison.total?.home || '-'} vs ${comparison.total?.away || '-'}</div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${pred.goals ? `
+                        <div class="stats-grid" style="margin-top: 15px;">
+                            <div class="stat-item">
+                                <div class="stat-label">Score predit</div>
+                                <div class="stat-value">${pred.goals.home || '?'} - ${pred.goals.away || '?'}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Under/Over</div>
+                                <div class="stat-value">${pred.under_over || '-'}</div>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Demo mode with sample data
+        function loadDemoData() {
+            const demoMatches = [
+                {
+                    fixture: { id: 1, date: new Date(Date.now() + 86400000).toISOString() },
+                    league: { name: 'Demo League', logo: 'https://media.api-sports.io/football/leagues/39.png' },
+                    teams: { 
+                        home: { name: 'Manchester United', logo: 'https://media.api-sports.io/football/teams/33.png' },
+                        away: { name: 'Liverpool', logo: 'https://media.api-sports.io/football/teams/40.png' }
+                    }
+                }
+            ];
+            
+            const demoPrediction = {
+                predictions: {
+                    percent: { home: '45%', draw: '25%', away: '30%' },
+                    advice: 'Double chance: Manchester United ou Nul',
+                    goals: { home: '2', away: '1' },
+                    under_over: '+2.5'
+                },
+                comparison: {
+                    form: { home: '75%', away: '65%' },
+                    att: { home: '80%', away: '70%' },
+                    def: { home: '70%', away: '75%' },
+                    h2h: { home: '55%', away: '45%' },
+                    goals: { home: '85%', away: '80%' },
+                    total: { home: '65%', away: '67%' }
+                }
+            };
+            
+            document.getElementById('matchesContainer').innerHTML = renderMatchCard(demoMatches[0], demoPrediction);
+        }
+    </script>
+</body>
+</html>
